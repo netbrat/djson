@@ -1,0 +1,22 @@
+{
+  "conn_name": "default",
+  "db_name": "test",
+  "table": "GO:user_",
+  "auto_increment": true,
+  "fields": [
+    {"name":"id", "title": "编码", "width": 0, "alias": "id"},
+    {"name":"name","title": "名称"}
+  ],
+
+  "search_fields": [
+    {"name":"id","title": "名称", "where": "id=? or name like ?", "values" : ["?","'%?%'"], "info": "请输入编码或名称"}
+  ],
+
+  "kvs": {
+    "default": {"key_fields": ["id"], "value_fields": ["name"],"key_sep": "-"}
+  },
+  "attr": {
+    "attr1": "Start",
+    "attr2": "End"
+  }
+}
