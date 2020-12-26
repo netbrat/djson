@@ -13,18 +13,18 @@ import (
 	"strings"
 )
 
-// script callback function
+// 脚本回调函数定义
 type ScriptFunc func(content string, args interface{}) (interface{}, error)
 
-// script struct
+// 脚本对象
 type Script struct {
-	Tag		string
-	ScriptFunc ScriptFunc
-	Args	interface{}
+	Tag			string
+	ScriptFunc 	ScriptFunc
+	Args		interface{}
 }
 
 
-// json file to struct
+// json文件内容解析到struct
 func FileUnmarshal(file string, obj interface{}, scripts []Script) error {
 	if jsData, err := ioutil.ReadFile(file); err != nil{
 		return err
@@ -39,9 +39,8 @@ func FileUnmarshal(file string, obj interface{}, scripts []Script) error {
 }
 
 
-// json string or []body to struct
+// json字符串或[]byte解析到struct
 func Unmarshal(js interface{}, obj interface{}, scripts []Script) error {
-
 	var jsData []byte
 	var data map[string]interface{}
 	switch reflect.TypeOf(js).Kind() {
@@ -57,7 +56,7 @@ func Unmarshal(js interface{}, obj interface{}, scripts []Script) error {
 	return reflectSetStruct(data, obj, scripts)
 }
 
-
+// 通过反射设置struct字段值
 func reflectSetStruct(data map[string]interface{}, obj interface{}, scripts []Script) (err error){
 	t := reflect.TypeOf(obj).Elem()
 	v := reflect.ValueOf(obj).Elem()
@@ -68,9 +67,9 @@ func reflectSetStruct(data map[string]interface{}, obj interface{}, scripts []Sc
 		sv := v.FieldByName(sf.Name)
 		sfName = sf.Name
 		//tag
-		tag := strings.Split(sf.Tag.Get("json"),",") //json tag
-		defValue := sf.Tag.Get("default") //default tag
-		isRequire := cast.ToBool(sf.Tag.Get("require")) //require tag
+		tag := strings.Split(sf.Tag.Get("json"),",") 	//json tag
+		defValue := sf.Tag.Get("default") 					//default tag
+		isRequire := cast.ToBool(sf.Tag.Get("require")) 	//require tag
 		if tag[0] == "" { tag[0] = sf.Name }
 		if tag[0] == "-" { continue }
 		jsonTag = tag[0]
@@ -109,7 +108,7 @@ func reflectSetStruct(data map[string]interface{}, obj interface{}, scripts []Sc
 	return
 }
 
-
+// 通过反射设置值
 func reflectSetValue(rt reflect.Type, rv reflect.Value, value interface{}, defValue string, scripts []Script) (err error){
 	if value == nil {
 		if defValue == ""{
@@ -228,7 +227,7 @@ func reflectSetValue(rt reflect.Type, rv reflect.Value, value interface{}, defVa
 	return
 }
 
-
+// 检查并运行回调脚本
 func runScript(value interface{}, scripts []Script) (v interface{}, err error){
 	v = value
 	if value == nil || reflect.TypeOf(value).Kind() != reflect.String {
