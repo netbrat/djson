@@ -7,10 +7,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/spf13/cast"
 	"io/ioutil"
 	"reflect"
 	"strings"
+
+	"github.com/spf13/cast"
 )
 
 // 脚本回调函数定义
@@ -18,9 +19,9 @@ type ScriptFunc func(content string, args interface{}) (interface{}, error)
 
 // 脚本对象
 type Script struct {
-	Tag			string
-	ScriptFunc 	ScriptFunc
-	Args		interface{}
+	Tag			string			//脚本标签
+	ScriptFunc	ScriptFunc		//回调函数
+	Args		interface{}		//回调参数
 }
 
 
@@ -67,7 +68,7 @@ func reflectSetStruct(data map[string]interface{}, obj interface{}, scripts []Sc
 		sv := v.FieldByName(sf.Name)
 		sfName = sf.Name
 		//tag
-		tag := strings.Split(sf.Tag.Get("json"),",") 	//json tag
+		tag := strings.Split(sf.Tag.Get("json"),",") 	    //json tag
 		defValue := sf.Tag.Get("default") 					//default tag
 		isRequire := cast.ToBool(sf.Tag.Get("require")) 	//require tag
 		if tag[0] == "" { tag[0] = sf.Name }
@@ -77,14 +78,14 @@ func reflectSetStruct(data map[string]interface{}, obj interface{}, scripts []Sc
 		var value interface{} = nil
 		if data != nil {
 			value, _ = data[tag[0]]
-			// check and run script
+			//脚本回调
 			if value, err = runScript(value, scripts); err != nil{
 				err = fmt.Errorf("%s(%s) run script error：%s",sf.Name,jsonTag, err.Error())
 				return
 			}
 		}
 
-		if isRequire{
+		if isRequire{ //必填项
 			if value == nil || cast.ToString(value) == ""{
 				err = fmt.Errorf("%s(%s) is require", sf.Name, jsonTag)
 				return
@@ -238,7 +239,9 @@ func runScript(value interface{}, scripts []Script) (v interface{}, err error){
 	}
 	vString := value.(string)
 	for _, script := range scripts {
-		if  script.Tag == "" || script.ScriptFunc == nil { continue }
+		if  script.Tag == "" || script.ScriptFunc == nil {
+			continue
+		}
 		tagLen := len(script.Tag)
 		if len(vString)> tagLen && strings.ToUpper(vString[:tagLen]) == strings.ToUpper(script.Tag) {
 			v, err = script.ScriptFunc(vString[tagLen:], script.Args)
